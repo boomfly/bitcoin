@@ -248,3 +248,4 @@ Additional Configure Flags
 A list of additional configure flags can be displayed with:
 
     ./configure --help
+>>>>>>> origin/0.12.1-bitcore

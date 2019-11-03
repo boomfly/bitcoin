@@ -1,16 +1,18 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2015 The Bitcoin Core developers
+// Copyright (c) 2009-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "protocol.h"
+#include <protocol.h>
 
-#include "util.h"
-#include "utilstrencodings.h"
+#include <util/system.h>
+#include <util/strencodings.h>
 
 #ifndef WIN32
 # include <arpa/inet.h>
 #endif
+
+static std::atomic<bool> g_initial_block_download_completed(false);
 
 namespace NetMsgType {
 const char *VERSION="version";
@@ -28,22 +30,17 @@ const char *GETADDR="getaddr";
 const char *MEMPOOL="mempool";
 const char *PING="ping";
 const char *PONG="pong";
-const char *ALERT="alert";
 const char *NOTFOUND="notfound";
 const char *FILTERLOAD="filterload";
 const char *FILTERADD="filteradd";
 const char *FILTERCLEAR="filterclear";
-const char *REJECT="reject";
 const char *SENDHEADERS="sendheaders";
-};
-
-static const char* ppszTypeName[] =
-{
-    "ERROR", // Should never occur
-    NetMsgType::TX,
-    NetMsgType::BLOCK,
-    "filtered block" // Should never occur
-};
+const char *FEEFILTER="feefilter";
+const char *SENDCMPCT="sendcmpct";
+const char *CMPCTBLOCK="cmpctblock";
+const char *GETBLOCKTXN="getblocktxn";
+const char *BLOCKTXN="blocktxn";
+} // namespace NetMsgType
 
 /** All known message types. Keep this in the same order as the list of
  * messages above and in protocol.h.
@@ -64,13 +61,16 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::MEMPOOL,
     NetMsgType::PING,
     NetMsgType::PONG,
-    NetMsgType::ALERT,
     NetMsgType::NOTFOUND,
     NetMsgType::FILTERLOAD,
     NetMsgType::FILTERADD,
     NetMsgType::FILTERCLEAR,
-    NetMsgType::REJECT,
-    NetMsgType::SENDHEADERS
+    NetMsgType::SENDHEADERS,
+    NetMsgType::FEEFILTER,
+    NetMsgType::SENDCMPCT,
+    NetMsgType::CMPCTBLOCK,
+    NetMsgType::GETBLOCKTXN,
+    NetMsgType::BLOCKTXN,
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 
@@ -79,7 +79,7 @@ CMessageHeader::CMessageHeader(const MessageStartChars& pchMessageStartIn)
     memcpy(pchMessageStart, pchMessageStartIn, MESSAGE_START_SIZE);
     memset(pchCommand, 0, sizeof(pchCommand));
     nMessageSize = -1;
-    nChecksum = 0;
+    memset(pchChecksum, 0, CHECKSUM_SIZE);
 }
 
 CMessageHeader::CMessageHeader(const MessageStartChars& pchMessageStartIn, const char* pszCommand, unsigned int nMessageSizeIn)
@@ -88,7 +88,7 @@ CMessageHeader::CMessageHeader(const MessageStartChars& pchMessageStartIn, const
     memset(pchCommand, 0, sizeof(pchCommand));
     strncpy(pchCommand, pszCommand, COMMAND_SIZE);
     nMessageSize = nMessageSizeIn;
-    nChecksum = 0;
+    memset(pchChecksum, 0, CHECKSUM_SIZE);
 }
 
 std::string CMessageHeader::GetCommand() const
@@ -127,13 +127,24 @@ bool CMessageHeader::IsValid(const MessageStartChars& pchMessageStartIn) const
 }
 
 
+ServiceFlags GetDesirableServiceFlags(ServiceFlags services) {
+    if ((services & NODE_NETWORK_LIMITED) && g_initial_block_download_completed) {
+        return ServiceFlags(NODE_NETWORK_LIMITED | NODE_WITNESS);
+    }
+    return ServiceFlags(NODE_NETWORK | NODE_WITNESS);
+}
+
+void SetServiceFlagsIBDCache(bool state) {
+    g_initial_block_download_completed = state;
+}
+
 
 CAddress::CAddress() : CService()
 {
     Init();
 }
 
-CAddress::CAddress(CService ipIn, uint64_t nServicesIn) : CService(ipIn)
+CAddress::CAddress(CService ipIn, ServiceFlags nServicesIn) : CService(ipIn)
 {
     Init();
     nServices = nServicesIn;
@@ -141,7 +152,7 @@ CAddress::CAddress(CService ipIn, uint64_t nServicesIn) : CService(ipIn)
 
 void CAddress::Init()
 {
-    nServices = NODE_NETWORK;
+    nServices = NODE_NONE;
     nTime = 100000000;
 }
 
@@ -151,48 +162,37 @@ CInv::CInv()
     hash.SetNull();
 }
 
-CInv::CInv(int typeIn, const uint256& hashIn)
-{
-    type = typeIn;
-    hash = hashIn;
-}
-
-CInv::CInv(const std::string& strType, const uint256& hashIn)
-{
-    unsigned int i;
-    for (i = 1; i < ARRAYLEN(ppszTypeName); i++)
-    {
-        if (strType == ppszTypeName[i])
-        {
-            type = i;
-            break;
-        }
-    }
-    if (i == ARRAYLEN(ppszTypeName))
-        throw std::out_of_range(strprintf("CInv::CInv(string, uint256): unknown type '%s'", strType));
-    hash = hashIn;
-}
+CInv::CInv(int typeIn, const uint256& hashIn) : type(typeIn), hash(hashIn) {}
 
 bool operator<(const CInv& a, const CInv& b)
 {
     return (a.type < b.type || (a.type == b.type && a.hash < b.hash));
 }
 
-bool CInv::IsKnownType() const
+std::string CInv::GetCommand() const
 {
-    return (type >= 1 && type < (int)ARRAYLEN(ppszTypeName));
-}
-
-const char* CInv::GetCommand() const
-{
-    if (!IsKnownType())
+    std::string cmd;
+    if (type & MSG_WITNESS_FLAG)
+        cmd.append("witness-");
+    int masked = type & MSG_TYPE_MASK;
+    switch (masked)
+    {
+    case MSG_TX:             return cmd.append(NetMsgType::TX);
+    case MSG_BLOCK:          return cmd.append(NetMsgType::BLOCK);
+    case MSG_FILTERED_BLOCK: return cmd.append(NetMsgType::MERKLEBLOCK);
+    case MSG_CMPCT_BLOCK:    return cmd.append(NetMsgType::CMPCTBLOCK);
+    default:
         throw std::out_of_range(strprintf("CInv::GetCommand(): type=%d unknown type", type));
-    return ppszTypeName[type];
+    }
 }
 
 std::string CInv::ToString() const
 {
-    return strprintf("%s %s", GetCommand(), hash.ToString());
+    try {
+        return strprintf("%s %s", GetCommand(), hash.ToString());
+    } catch(const std::out_of_range &) {
+        return strprintf("0x%08x %s", type, hash.ToString());
+    }
 }
 
 const std::vector<std::string> &getAllNetMessageTypes()

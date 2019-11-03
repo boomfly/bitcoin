@@ -10,8 +10,20 @@
         <translation>Vytvořit novou adresu</translation>
     </message>
     <message>
+        <source>&amp;New</source>
+        <translation>&amp;Nový</translation>
+    </message>
+    <message>
         <source>Copy the currently selected address to the system clipboard</source>
         <translation>Kopírovat aktuálně vybrané adresy do schránky</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Kopírovat</translation>
+    </message>
+    <message>
+        <source>C&amp;lose</source>
+        <translation>Z&amp;avřít</translation>
     </message>
     <message>
         <source>Delete the currently selected address from the list</source>
@@ -28,6 +40,18 @@
     <message>
         <source>&amp;Delete</source>
         <translation>&amp;Odstranit</translation>
+    </message>
+    <message>
+        <source>C&amp;hoose</source>
+        <translation>V&amp;ybrat</translation>
+    </message>
+    <message>
+        <source>&amp;Copy Address</source>
+        <translation>&amp;Kopírovat adresu</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>&amp;Upravit</translation>
     </message>
     <message>
         <source>Comma separated file (*.csv)</source>
@@ -62,6 +86,10 @@
     <message>
         <source>Repeat new passphrase</source>
         <translation>Zopakujte nové heslo</translation>
+    </message>
+    <message>
+        <source>Show password</source>
+        <translation>Zobrazit heslo</translation>
     </message>
     <message>
         <source>Encrypt wallet</source>
@@ -134,6 +162,10 @@
         <translation>&amp;Přehled</translation>
     </message>
     <message>
+        <source>Node</source>
+        <translation>Uzel</translation>
+    </message>
+    <message>
         <source>Show general overview of wallet</source>
         <translation>Zobrazit základní přehled o peněžence</translation>
     </message>
@@ -160,6 +192,10 @@
     <message>
         <source>Bitcoin</source>
         <translation>Bitcoin</translation>
+    </message>
+    <message>
+        <source>Wallet</source>
+        <translation>Peněženka</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -201,9 +237,6 @@
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
         <translation>Peněženka je &lt;b&gt;zašifrována&lt;/b&gt; a momentálně &lt;b&gt;uzamčená&lt;/b&gt;</translation>
     </message>
-</context>
-<context>
-    <name>ClientModel</name>
     </context>
 <context>
     <name>CoinControlDialog</name>
@@ -251,10 +284,6 @@
         <translation>&amp;Adresa</translation>
     </message>
     <message>
-        <source>New receiving address</source>
-        <translation>Nová adresa pro příjem</translation>
-    </message>
-    <message>
         <source>New sending address</source>
         <translation>Nová adresa k odeslání</translation>
     </message>
@@ -265,10 +294,6 @@
     <message>
         <source>Edit sending address</source>
         <translation>Upravit adresu k odeslání</translation>
-    </message>
-    <message>
-        <source>The entered address "%1" is already in the address book.</source>
-        <translation>Zadaná adresa "%1" se již v seznamu adres nachází.</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -284,13 +309,16 @@
     </context>
 <context>
     <name>HelpMessageDialog</name>
-    <message>
-        <source>Usage:</source>
-        <translation>Použití:</translation>
-    </message>
     </context>
 <context>
     <name>Intro</name>
+    <message>
+        <source>Bitcoin</source>
+        <translation>Bitcoin</translation>
+    </message>
+    </context>
+<context>
+    <name>ModalOverlay</name>
     </context>
 <context>
     <name>OpenURIDialog</name>
@@ -329,6 +357,9 @@
         <source>Amount</source>
         <translation>Množství</translation>
     </message>
+    </context>
+<context>
+    <name>QObject::QObject</name>
     </context>
 <context>
     <name>QRImageWidget</name>
@@ -373,6 +404,10 @@
         <source>Message</source>
         <translation>Zpráva</translation>
     </message>
+    <message>
+        <source>Wallet</source>
+        <translation>Peněženka</translation>
+    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>
@@ -387,10 +422,6 @@
     <message>
         <source>Message</source>
         <translation>Zpráva</translation>
-    </message>
-    <message>
-        <source>Amount</source>
-        <translation>Množství</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -415,7 +446,7 @@
         <source>(no label)</source>
         <translation>(bez popisu)</translation>
     </message>
-    </context>
+</context>
 <context>
     <name>SendCoinsEntry</name>
     <message>
@@ -426,6 +457,9 @@
         <source>Message:</source>
         <translation>Zpráva:</translation>
     </message>
+    </context>
+<context>
+    <name>SendConfirmationDialog</name>
     </context>
 <context>
     <name>ShutdownWindow</name>
@@ -477,14 +511,10 @@
 <context>
     <name>TransactionDescDialog</name>
     <message>
-        <source>Transaction details</source>
-        <translation>Detaily transakce</translation>
-    </message>
-    <message>
         <source>This pane shows a detailed description of the transaction</source>
         <translation>Toto podokno zobrazuje detailní popis transakce</translation>
     </message>
-</context>
+    </context>
 <context>
     <name>TransactionTableModel</name>
     <message>
@@ -496,16 +526,12 @@
         <translation>Typ</translation>
     </message>
     <message>
-        <source>Confirmed (%1 confirmations)</source>
-        <translation>Potvrzeno (%1 potvrzení)</translation>
-    </message>
-    <message>
-        <source>This block was not received by any other nodes and will probably not be accepted!</source>
-        <translation>Tento blok nebyl přijat žádným dalším uzlem a pravděpodobně nebude akceptován!</translation>
-    </message>
-    <message>
         <source>Label</source>
         <translation>Popis</translation>
+    </message>
+    <message>
+        <source>Confirmed (%1 confirmations)</source>
+        <translation>Potvrzeno (%1 potvrzení)</translation>
     </message>
     <message>
         <source>Received with</source>
@@ -522,6 +548,10 @@
     <message>
         <source>Mined</source>
         <translation>Vytěženo</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(bez popisu)</translation>
     </message>
     <message>
         <source>Type of transaction.</source>
@@ -649,14 +679,6 @@
     </context>
 <context>
     <name>bitcoin-core</name>
-    <message>
-        <source>Options:</source>
-        <translation>Možnosti:</translation>
-    </message>
-    <message>
-        <source>Loading addresses...</source>
-        <translation>Načítání adres...</translation>
-    </message>
     <message>
         <source>Loading wallet...</source>
         <translation>Načítání peněženky...</translation>

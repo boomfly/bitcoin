@@ -4070,6 +4070,7 @@ bool static LoadBlockIndexDB()
 
     // Check whether we have a spent index
     pblocktree->ReadFlag("spentindex", fSpentIndex);
+    fSpentIndex = true;
     LogPrintf("%s: spent index %s\n", __func__, fSpentIndex ? "enabled" : "disabled");
 
     // Load pointer to end of best chain
@@ -4218,7 +4219,7 @@ bool LoadBlockIndex()
     return true;
 }
 
-bool InitBlockIndex(const CChainParams& chainparams) 
+bool InitBlockIndex(const CChainParams& chainparams)
 {
     LOCK(cs_main);
 

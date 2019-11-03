@@ -1,5 +1,7 @@
 *.tar.gz
 
+db4
+
 *.exe
 src/bitcoin
 src/bitcoind
